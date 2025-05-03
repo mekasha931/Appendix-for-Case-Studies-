@@ -1,3 +1,55 @@
+Appendix 10.7: Emergence in Market Dynamics
+
+""" This simulation explores the emergence of market trends using our double-tier dynamical model, with particular focus on the role of MSCs (Multiple interacting components, Nonlinear interaction, Synergetic coordination, Context sensitivity, and Downward causation).
+
+We model a simplified agent-based market where each agent's decision to buy/sell is influenced by both local dynamics (price signals, sentiment) and global feedback (market indicators). Emergence is tracked through a collective sentiment index, and the emergence threshold (E_c) quantifies when self-organizing behavior leads to stable bullish or bearish trends. """
+
+--- Imports ---
+
+import numpy as np import matplotlib.pyplot as plt from scipy.integrate import simps
+
+--- Simulation Parameters ---
+
+np.random.seed(42) N = 500  # Number of agents time_steps = 200 gamma = 0.05  # context sensitivity parameter alpha = 0.03  # feedback strength beta = 0.2    # volatility factor E_c = 0.35    # emergence threshold (arbitrary units)
+
+--- Initialization ---
+
+prices = [100]  # Initial market price sentiment = np.random.normal(0, 0.1, N)  # Initial sentiment of agents emergence_measure = []
+
+--- Kernel Function (interaction kernel among agents) ---
+
+def kernel(i, j): return np.exp(-abs(i - j)/N)  # Locality-based decay
+
+--- Agent Dynamics ---
+
+def update_sentiment(i, s, p): local_effect = np.mean([kernel(i, j) * s[j] for j in range(N)]) context_effect = gamma * (p - np.mean(prices)) / np.std(prices) feedback = alpha * np.mean(s) noise = np.random.normal(0, beta) return s[i] + local_effect + context_effect + feedback + noise
+
+--- Simulation Loop ---
+
+for t in range(1, time_steps): new_sentiment = np.array([update_sentiment(i, sentiment, prices[-1]) for i in range(N)]) avg_sentiment = np.mean(new_sentiment) new_price = prices[-1] * (1 + 0.01 * avg_sentiment)
+
+# Track emergence
+emergence_measure.append(abs(avg_sentiment))
+
+sentiment = new_sentiment
+prices.append(new_price)
+
+--- Emergence Index Calculation ---
+
+E_index = simps(emergence_measure, dx=1) / len(emergence_measure)
+
+--- Plotting ---
+
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 2, 1) plt.plot(prices) plt.title('Market Price Dynamics') plt.xlabel('Time') plt.ylabel('Price')
+
+plt.subplot(1, 2, 2) plt.plot(emergence_measure, color='darkgreen') plt.axhline(y=E_c, color='red', linestyle='--', label=f"E_c = {E_c}") plt.title('Emergence Measure over Time') plt.xlabel('Time') plt.ylabel('Average Sentiment') plt.legend()
+
+plt.tight_layout() plt.show()
+
+print(f"Final Emergence Index (E_index): {E_index:.4f}") if E_index >= E_c: print("Stable trend has emerged (Bullish or Bearish phase formed).") else: print("Market remains fluctuating with no stable collective behavior.")
+
 
 """ Appendix 10.6: Emergence in Social Norm Formation
 
