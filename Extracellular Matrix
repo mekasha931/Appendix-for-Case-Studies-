@@ -1,1 +1,47 @@
 
+Section 10.4: ECM (Extracellular Matrix) Dynamics and Emergence Simulation
+
+File name: ecm_emergence_sim.py
+
+import numpy as np import matplotlib.pyplot as plt from scipy.integrate import quad from scipy.special import expit  # Sigmoid for non-linear interaction
+
+Time domain
+
+t = np.linspace(0, 50, 1000)  # 0 to 50 units, 1000 time points dt = t[1] - t[0]
+
+Model parameters
+
+alpha = 0.7        # Growth/activation rate beta = 0.3         # Inhibition/decay rate gamma = 0.9        # Synergy scaling omega = 0.1        # Context sensitivity strength E_c = 12.0         # Emergence threshold (heuristic)
+
+MSC-mapped variables
+
+n_components = 50  # MSC-1: multiple ECM components x0 = 0.05 * np.random.rand(n_components)  # Initial ECM states (low concentration)
+
+Kernel function: synergy + context sensitivity
+
+def kernel(s, tau): context_factor = 1 + omega * np.sin(0.2 * tau) return gamma * np.exp(-0.1 * (s - tau)**2) * context_factor
+
+Non-linear sigmoidal interaction (MSC-2)
+
+def nonlinear_interaction(x): return expit(x - 0.5)
+
+System evolution function
+
+def evolve(x_t, t_idx): memory_term = np.zeros_like(x_t) for i in range(n_components): integral_sum = 0 for j in range(t_idx): k_val = kernel(t[t_idx], t[j]) integral_sum += k_val * nonlinear_interaction(x_t[i]) * dt memory_term[i] = integral_sum return alpha * (1 - x_t) * nonlinear_interaction(x_t) - beta * x_t + memory_term
+
+Initialize result array
+
+x_t_all = np.zeros((len(t), n_components)) x_t_all[0, :] = x0 emergence_curve = np.zeros(len(t))
+
+Time evolution loop
+
+for k in range(1, len(t)): x_t_all[k, :] = x_t_all[k - 1, :] + evolve(x_t_all[k - 1, :], k - 1) * dt emergence_curve[k] = np.sum(x_t_all[k, :]) * dt  # Accumulated emergence
+
+Plotting
+
+plt.figure(figsize=(12, 6)) plt.subplot(1, 2, 1) plt.plot(t, x_t_all[:, :5])  # Plot first 5 component dynamics plt.title("ECM Dynamics (Sample Components)") plt.xlabel("Time") plt.ylabel("Component Activity")
+
+plt.subplot(1, 2, 2) plt.plot(t, emergence_curve, label="Integral of Emergence") plt.axhline(E_c, color='r', linestyle='--', label=f"Emergence Threshold E_c = {E_c}") plt.title("Emergence Accumulation in ECM") plt.xlabel("Time") plt.ylabel("Emergence") plt.legend()
+
+plt.tight_layout() plt.show()
+
