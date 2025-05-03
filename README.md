@@ -75,8 +75,3 @@ plt.grid(True)
 plt.savefig("ising_phase_transition.png")
 plt.show()
 
-
----
-
-Would you like me to continue with 10.3 Superconductivity next?
-
