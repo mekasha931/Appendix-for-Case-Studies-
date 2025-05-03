@@ -1,1 +1,73 @@
 
+Appendix 10.3: Superconductivity – Python Simulation
+
+File Name: superconductivity_emergence_sim.py
+
+""" Description: This script simulates the emergence of superconductivity modeled using the double-tier integro-partial differential equation framework introduced in Chapter 9. The emergence threshold E_c is explored via the temperature-dependent coherence in a simplified lattice of interacting particles.
+
+Variables:
+
+T: Temperature (K)
+
+psi: Superconducting order parameter (complex field)
+
+x: Spatial coordinate
+
+t: Time (simulation steps)
+
+G(t,s): Memory kernel function encoding temporal history
+
+Emergence: Tracked by the norm of psi and compared to E_c
+
+
+Graphs:
+
+Evolution of |psi| over time and space
+
+Emergence integral vs temperature """
+
+
+import numpy as np import matplotlib.pyplot as plt from scipy.integrate import quad from matplotlib.animation import FuncAnimation
+
+Simulation parameters
+
+L = 100                # Spatial domain size T_steps = 200          # Number of time steps dx = 1.0 dt = 0.05 x = np.linspace(0, L, L)
+
+Initial condition
+
+psi = np.exp(-((x - L/2)**2)/25.0) * (1 + 0.1j) psi_hist = [psi.copy()]
+
+Physical parameters
+
+Tc = 9.2  # Critical temperature (e.g., for Nb, in Kelvin) T_vals = np.linspace(5, 12, T_steps)
+
+Memory kernel G(t,s) - exponential decay
+
+alpha = 0.1 def G(t, s): return np.exp(-alpha * (t - s)) if t >= s else 0
+
+Emergence threshold (arbitrary scale for visualization)
+
+E_c = 0.75
+
+Time evolution function
+
+def evolve(psi, T): laplacian = np.roll(psi, -1) + np.roll(psi, 1) - 2 * psi nonlinear = -np.abs(psi)**2 * psi temp_factor = (1 - T/Tc) return psi + dt * (0.5 * laplacian + temp_factor * psi + nonlinear)
+
+Emergence integral
+
+emergence_vals = []
+
+for i, T in enumerate(T_vals): psi = evolve(psi, T) psi_hist.append(psi.copy()) # Approximate emergence measure as norm squared E_t = np.trapz(np.abs(psi)**2, x) emergence_vals.append(E_t)
+
+Plot final |psi| field
+
+plt.figure(figsize=(8,4)) plt.plot(x, np.abs(psi), label="|psi(x)| at final T") plt.title("Final Superconducting Order Parameter") plt.xlabel("x") plt.ylabel("|psi|") plt.legend() plt.grid(True) plt.savefig("psi_field_final.png") plt.show()
+
+Plot emergence measure
+
+plt.figure(figsize=(8,4)) plt.plot(T_vals, emergence_vals, label="Emergence Integral") plt.axhline(y=E_c, color='r', linestyle='--', label="Emergence Threshold $E_c$") plt.title("Emergence in Superconductivity vs Temperature") plt.xlabel("Temperature T (K)") plt.ylabel("Emergence Integral") plt.legend() plt.grid(True) plt.savefig("emergence_vs_T.png") plt.show()
+
+Optional: Save data for GitHub upload
+
+np.savez("superconductivity_data.npz", T_vals=T_vals, emergence=emergence_vals)
+
