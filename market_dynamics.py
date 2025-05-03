@@ -51,30 +51,8 @@ plt.tight_layout() plt.show()
 print(f"Final Emergence Index (E_index): {E_index:.4f}") if E_index >= E_c: print("Stable trend has emerged (Bullish or Bearish phase formed).") else: print("Market remains fluctuating with no stable collective behavior.")
 
 
-""" Appendix 10.6: Emergence in Social Norm Formation
 
-This simulation models how a social meme spreads across a population of interacting agents and matures into a stable social norm once the collective internalization (M(t)) crosses a critical threshold E_c.
-
-Key Concepts:
-
-N: Number of agents
-
-meme_strength[i]: Internalized strength of the meme for agent i
-
-influence[i]: Social influence felt by agent i at each time step
-
-M(t): Global meme prevalence (mean of meme strengths)
-
-E_c: Emergence threshold
-
-interaction_matrix: Social adjacency matrix of influence weights
-
-K(t−τ): Memory kernel with exponential decay
-
-noise: Random context-dependent perturbation to simulate real-world uncertainty """
-
-
-import numpy as np import matplotlib.pyplot as plt
+ib.pyplot as plt
 
 ------------------------
 
